@@ -1,0 +1,88 @@
+"""
+Microsoft Graph API — SharePoint 연동
+- Word 리포트를 문서 라이브러리 폴더에 업로드
+- 진단 결과 메타데이터를 List에 저장
+- 진단 이력 조회
+"""
+import requests
+import json
+from datetime import datetime
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import config
+
+GRAPH = "https://graph.microsoft.com/v1.0"
+
+# SharePoint 저장 폴더 경로 (나중에 변경 가능)
+REPORT_FOLDER = "교육사업팀 내부용/01 변화관리/진단프로젝트/TEST"
+
+
+class SharePointClient:
+    def __init__(self):
+        self._token = self._get_token()
+        self._headers = {
+            "Authorization": f"Bearer {self._token}",
+            "Content-Type": "application/json",
+        }
+
+    def _get_token(self) -> str:
+        r = requests.post(
+            f"https://login.microsoftonline.com/{config.TENANT_ID}/oauth2/v2.0/token",
+            data={
+                "grant_type": "client_credentials",
+                "client_id": config.CLIENT_ID,
+                "client_secret": config.CLIENT_SECRET,
+                "scope": "https://graph.microsoft.com/.default",
+            },
+        )
+        r.raise_for_status()
+        return r.json()["access_token"]
+
+    def upload_report(self, file_bytes: bytes, filename: str) -> str:
+        """Word 리포트를 SharePoint 폴더에 업로드, URL 반환"""
+        url = (
+            f"{GRAPH}/sites/{config.SHAREPOINT_SITE_ID}"
+            f"/drives/{config.SHAREPOINT_DRIVE_ID}"
+            f"/root:/{REPORT_FOLDER}/{filename}:/content"
+        )
+        r = requests.put(
+            url,
+            headers={
+                "Authorization": f"Bearer {self._token}",
+                "Content-Type": "application/octet-stream",
+            },
+            data=file_bytes,
+        )
+        r.raise_for_status()
+        return r.json().get("webUrl", "")
+
+    def save_result(self, project_name: str, scores: dict, report_url: str) -> None:
+        """진단 결과 메타데이터를 SharePoint List에 저장"""
+        requests.post(
+            f"{GRAPH}/sites/{config.SHAREPOINT_SITE_ID}"
+            f"/lists/{config.SHAREPOINT_LIST_ID}/items",
+            headers=self._headers,
+            json={
+                "fields": {
+                    "Title": project_name,
+                    "DiagnosisDate": datetime.now().isoformat(),
+                    "OverallScore": scores.get("overall", 0),
+                    "OverallLevel": scores.get("overall_level", ""),
+                    "SurveyScore": scores.get("survey", 0),
+                    "BehaviorScore": scores.get("behavior", 0),
+                    "TopRisks": json.dumps(scores.get("risks", []), ensure_ascii=False),
+                    "ReportURL": report_url,
+                }
+            },
+        ).raise_for_status()
+
+    def get_history(self) -> list:
+        """진단 이력 목록 조회"""
+        r = requests.get(
+            f"{GRAPH}/sites/{config.SHAREPOINT_SITE_ID}"
+            f"/lists/{config.SHAREPOINT_LIST_ID}/items"
+            "?expand=fields&$orderby=fields/DiagnosisDate desc&$top=30",
+            headers=self._headers,
+        )
+        r.raise_for_status()
+        return r.json().get("value", [])
