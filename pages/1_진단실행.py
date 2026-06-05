@@ -205,10 +205,24 @@ if "result" in st.session_state:
                 st.caption(d.get("해석",""))
 
     st.markdown("---")
-    st.download_button(
-        "📥 Word 리포트 다운로드",
-        report_bytes,
-        f"{project_name_r}_진단리포트_{datetime.now().strftime('%Y%m%d')}.docx",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        type="primary",
-    )
+
+    # 버튼을 나란히 배치하기 위해 컬럼 분할
+    btn_col1, btn_col2 = st.columns([1, 1])
+
+    with btn_col1:
+        st.download_button(
+            "📥 Word 리포트 다운로드",
+            report_bytes,
+            f"{project_name_r}_진단리포트_{datetime.now().strftime('%Y%m%d')}.docx",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            type="primary",
+        )
+    with btn_col2:
+        # 초기화 버튼 추가
+        if st.button("🔄 새 진단 시작 (초기화)", use_container_width=True):
+            # 1. 세션 스테이트에서 결과 데이터 삭제
+            if "result" in st.session_state:
+                del st.session_state["result"]
+            
+            # 2. 화면 즉시 새로고침 (입력 폼으로 돌아감)
+            st.rerun()
