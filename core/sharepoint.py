@@ -6,7 +6,9 @@ Microsoft Graph API — SharePoint 연동
 """
 import requests
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+KST = timezone(timedelta(hours=9))
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import config
@@ -54,7 +56,8 @@ class SharePointClient:
             data=file_bytes,
         )
         r.raise_for_status()
-        return r.json().get("webUrl", "")
+        data = r.json()
+        return data.get("webUrl") or data.get("@microsoft.graph.downloadUrl", "")
 
     def save_result(self, project_name: str, scores: dict, report_url: str) -> None:
         """진단 결과 메타데이터를 SharePoint List에 저장"""
@@ -65,7 +68,7 @@ class SharePointClient:
             json={
                 "fields": {
                     "Title": project_name,
-                    "DiagnosisDate": datetime.now().isoformat(),
+                    "DiagnosisDate": datetime.now(KST).isoformat(),
                     "OverallScore": scores.get("overall", 0),
                     "OverallLevel": scores.get("overall_level", ""),
                     "SurveyScore": scores.get("survey", 0),
