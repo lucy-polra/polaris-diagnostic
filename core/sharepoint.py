@@ -57,7 +57,12 @@ class SharePointClient:
         )
         r.raise_for_status()
         data = r.json()
-        return data.get("webUrl") or data.get("@microsoft.graph.downloadUrl", "")
+        # webUrl, @microsoft.graph.downloadUrl, 또는 직접 URL 생성
+        web_url = data.get("webUrl", "")
+        if not web_url:
+            site_base = "https://mavenkr.sharepoint.com/sites/msteams_688bfb-"
+            web_url = f"{site_base}/Shared%20Documents/{REPORT_FOLDER.replace(' ', '%20')}/{filename}"
+        return web_url
 
     def save_result(self, project_name: str, scores: dict, report_url: str) -> None:
         """진단 결과 메타데이터를 SharePoint List에 저장"""
