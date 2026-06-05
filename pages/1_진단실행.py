@@ -62,7 +62,14 @@ ready = all([project_name, survey_file, internal_file, interview_file, behavior_
 if not ready:
     st.info("프로젝트명과 4가지 파일을 모두 업로드하면 분석 버튼이 활성화됩니다.")
 
+if "analysis_done" not in st.session_state:
+    st.session_state.analysis_done = False
+if "analysis_result" not in st.session_state:
+    st.session_state.analysis_result = None
+
 if st.button("진단 분석 시작", type="primary", disabled=not ready):
+    st.session_state.analysis_done = False
+    st.session_state.analysis_result = None
     progress = st.progress(0)
     status = st.empty()
 
@@ -126,6 +133,18 @@ if st.button("진단 분석 시작", type="primary", disabled=not ready):
 
         progress.progress(100)
         status.success("✅ 진단 완료!")
+
+        # 결과를 session_state에 저장
+        st.session_state.analysis_done = True
+        st.session_state.analysis_result = {
+            "synthesis": synthesis_result,
+            "survey": survey_result,
+            "internal": internal_result,
+            "interview": interview_result,
+            "behavior": behavior_result,
+            "report_bytes": report_bytes,
+            "project_name": project_name,
+        }
 
         # ── 결과 화면 ──────────────────────────────────────
         st.markdown("---")
@@ -209,3 +228,29 @@ if st.button("진단 분석 시작", type="primary", disabled=not ready):
     except Exception as e:
         st.error(f"오류 발생: {e}")
         st.exception(e)
+
+# ── 이전 결과 유지 표시 ─────────────────────────────────
+if st.session_state.get("analysis_done") and st.session_state.get("analysis_result"):
+    r = st.session_state.analysis_result
+    st.success("✅ 진단 완료! (이전 결과)")
+    st.markdown("---")
+    st.subheader("진단 결과")
+    synthesis_result = r["synthesis"]
+    overall = synthesis_result.get("종합점수", 0)
+    level = synthesis_result.get("종합등급", "")
+    col_a, col_b, col_c, col_d, col_e = st.columns(5)
+    col_a.metric("종합 변화준비도", f"{overall}점", f"등급: {level}")
+    for col, (label, key) in zip([col_b, col_c, col_d, col_e], [
+        ("1차 설문", "1차 설문"), ("2차 조직자료", "2차 조직자료"),
+        ("3차 인터뷰", "3차 인터뷰"), ("4차 행동진단", "4차 행동진단"),
+    ]):
+        s = synthesis_result["차수별_점수"].get(key, 0)
+        lv = "상" if s >= 80 else "중" if s >= 60 else "하"
+        col.metric(label, f"{s}점", f"등급: {lv}")
+    st.download_button(
+        "📥 Word 리포트 다운로드",
+        r["report_bytes"],
+        f"{r['project_name']}_진단리포트_{datetime.now().strftime('%Y%m%d')}.docx",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        type="primary",
+    )
