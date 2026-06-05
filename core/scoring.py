@@ -298,10 +298,29 @@ def synthesize(survey: dict, internal: dict, interview: dict, behavior: dict) ->
         1
     )
     level = get_level(overall)
+
+    # 점수가 낮은 영역을 Top Risks로 자동 도출
+    all_scores = []
+    for area in ["현재상태", "변화추진환경"]:
+        s = survey.get(f"{area}_점수", 0)
+        if s: all_scores.append((area, s))
+    for area in ["조직구조", "업무방식", "협업문화", "제도정책", "디지털환경", "변화경험"]:
+        s = internal.get(area, {}).get("점수", 0)
+        if s: all_scores.append((area, s))
+    for area in ["협업행동", "디지털활용", "변화참여", "협업네트워크"]:
+        s = behavior.get(area, {}).get("점수", 0)
+        if s: all_scores.append((area, s))
+
+    top_risks = [
+        {"risk": area, "description": f"점수 {score}점 ({get_level(score)})", "impact": "높음" if score < 50 else "중간"}
+        for area, score in sorted(all_scores, key=lambda x: x[1])[:3]
+    ]
+
     return {
         "종합점수": overall,
         "종합등급": level,
         "권고사항": RECOMMENDATIONS[level],
+        "top_risks": top_risks,
         "차수별_점수": {
             "1차 설문": survey.get("종합점수", 0),
             "2차 조직자료": internal.get("종합점수", 0),

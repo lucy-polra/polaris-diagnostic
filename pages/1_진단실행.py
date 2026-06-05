@@ -98,6 +98,32 @@ if st.button("진단 분석 시작", type="primary", disabled=not ready):
         status.info("Word 리포트 생성 중...")
         report_bytes = generate(project_name, survey_result, internal_result,
                                 interview_result, behavior_result, synthesis_result)
+        progress.progress(95)
+
+        # SharePoint 저장
+        status.info("☁️ SharePoint 저장 중...")
+        report_url = ""
+        try:
+            from core.sharepoint import SharePointClient
+            sp = SharePointClient()
+            filename = f"{project_name}_{datetime.now().strftime('%Y%m%d_%H%M')}_진단리포트.docx"
+            report_url = sp.upload_report(report_bytes, filename)
+            # st.write(f"DEBUG report_url: {report_url}")
+            top_risks = [r.get("risk", "") for r in synthesis_result.get("top_risks", [])]
+            # st.write(f"DEBUG top_risks: {top_risks}")
+            sp.save_result(project_name, {
+                "overall": synthesis_result.get("종합점수", 0),
+                "overall_level": synthesis_result.get("종합등급", ""),
+                "survey": survey_result.get("종합점수", 0),
+                "behavior": behavior_result.get("종합점수", 0),
+                "risks": top_risks,
+            }, report_url)
+            st.success(f"✅ SharePoint 저장 완료!")
+        except Exception as sp_err:
+            st.warning(f"⚠️ SharePoint 저장 실패: {sp_err}")
+            import traceback
+            st.code(traceback.format_exc())
+
         progress.progress(100)
         status.success("✅ 진단 완료!")
 

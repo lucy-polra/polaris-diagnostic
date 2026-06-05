@@ -76,7 +76,7 @@ class SharePointClient:
             },
         )
         r.raise_for_status()
-        # print("List 저장 응답:", r.json())
+        print("List 저장 응답:", r.json())
 
     def get_history(self) -> list:
         """진단 이력 목록 조회"""

@@ -58,7 +58,7 @@ class SharePointClient:
 
     def save_result(self, project_name: str, scores: dict, report_url: str) -> None:
         """진단 결과 메타데이터를 SharePoint List에 저장"""
-        r = requests.post(
+        requests.post(
             f"{GRAPH}/sites/{config.SHAREPOINT_SITE_ID}"
             f"/lists/{config.SHAREPOINT_LIST_ID}/items",
             headers=self._headers,
@@ -74,9 +74,7 @@ class SharePointClient:
                     "ReportURL": report_url,
                 }
             },
-        )
-        r.raise_for_status()
-        # print("List 저장 응답:", r.json())
+        ).raise_for_status()
 
     def get_history(self) -> list:
         """진단 이력 목록 조회"""
