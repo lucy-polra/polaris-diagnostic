@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import time  # 코드 맨 위쪽 import 모여있는 곳에 추가하세요
 
 from core.scoring import calc_survey, calc_internal, calc_interview, calc_behavior, synthesize
 from core.report import generate
@@ -44,13 +45,11 @@ with st.expander("📥 입력 양식 샘플 다운로드"):
     with c1:
         st.download_button("1차 설문 CSV", survey_csv(), "1차_설문_샘플.csv", "text/csv")
     with c2:
-        st.download_button("2차 조직자료 Excel", internal_xlsx(), "2차_조직자료_샘플.xlsx",
-                           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.download_button("2차 조직자료 Excel", internal_xlsx(), "2차_조직자료_샘플.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     with c3:
         st.download_button("3차 인터뷰 JSON", interview_json(), "3차_인터뷰_샘플.json", "application/json")
     with c4:
-        st.download_button("4차 행동진단 Excel", behavior_xlsx(), "4차_행동진단_샘플.xlsx",
-                           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.download_button("4차 행동진단 Excel", behavior_xlsx(), "4차_행동진단_샘플.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 st.markdown("---")
 
@@ -62,6 +61,7 @@ if not ready:
 if st.button("🚀 진단 분석 시작", type="primary", disabled=not ready):
 
     with st.spinner("분석 중입니다... 잠시 기다려주세요."):
+        time.sleep(0.1)
         try:
             # 1차 설문
             survey_result = calc_survey(pd.read_csv(survey_file))
