@@ -19,7 +19,8 @@ st.caption("4가지 진단 자료를 업로드하면 점수와 해석이 자동�
 st.markdown("---")
 
 # ── 입력 영역 ───────────────────────────────────────────
-project_name = st.text_input("프로젝트명 *", placeholder="예: 2026 디지털 전환 프로젝트")
+#project_name = st.text_input("프로젝트명 *", placeholder="예: 2026 디지털 전환 프로젝트")
+project_name = st.text_input("프로젝트명 *", placeholder="예: 2026 디지털 전환 프로젝트", key="project_name_input")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -220,9 +221,21 @@ if "result" in st.session_state:
     with btn_col2:
         # 초기화 버튼 추가
         if st.button("🔄 새 진단 시작 (초기화)", use_container_width=True):
-            # 1. 세션 스테이트에서 결과 데이터 삭제
-            if "result" in st.session_state:
-                del st.session_state["result"]
+            # 1. 지워야 할 모든 세션 키 목록
+            keys_to_clear = [
+                "result",               # 결과 데이터
+                "project_name_input",   # 프로젝트명 텍스트
+                "survey",               # 1차 설문 파일
+                "internal",             # 2차 조직자료 파일
+                "interview",            # 3차 인터뷰 파일
+                "behavior"              # 4차 행동진단 파일
+            ]
             
-            # 2. 화면 즉시 새로고침 (입력 폼으로 돌아감)
+            # 2. 목록을 돌면서 세션에서 삭제
+            for k in keys_to_clear:
+                if k in st.session_state:
+                    del st.session_state[k]
+            
+            # 3. 화면 즉시 새로고침
             st.rerun()
+            
