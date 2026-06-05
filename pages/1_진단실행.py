@@ -23,7 +23,7 @@ project_name = st.text_input("프로젝트명 *", placeholder="예: 2026 디지�
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("1차  사전 진단 설문")
-    st.caption("CSV | 현재상태(q1~q6) + 변화추진환경(q7~q10) + 요구사항")
+    st.caption("CSV | 현재상태(q1-q6) + 변화추진환경(q7-q10) + 요구사항")
     survey_file = st.file_uploader("파일 선택", type=["csv"], key="survey")
 
     st.subheader("2차  조직 자료 분석")
@@ -117,6 +117,7 @@ if st.button("🚀 진단 분석 시작", type="primary", disabled=not ready):
                 "project_name": project_name,
                 "sp_status": sp_status,
             }
+            # st.rerun()  # 강제 새로고침이 오히려 웹소켓 연결을 불안정하게 만들 수 있음
 
         except Exception as e:
             st.error(f"오류 발생: {e}")
