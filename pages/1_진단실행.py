@@ -14,32 +14,37 @@ if not st.session_state.get("authenticated"):
     st.warning("메인 페이지에서 로그인해주세요.")
     st.stop()
 
+
+# --- (추가할 코드) 입력 폼 초기화를 위한 상태값 lucy 추가---
+if "reset_key" not in st.session_state:
+    st.session_state["reset_key"] = 0
+
 st.title("진단 실행")
 st.caption("4가지 진단 자료를 업로드하면 점수와 해석이 자동으로 도출됩니다.")
 st.markdown("---")
 
 # ── 입력 영역 ───────────────────────────────────────────
 #project_name = st.text_input("프로젝트명 *", placeholder="예: 2026 디지털 전환 프로젝트")
-project_name = st.text_input("프로젝트명 *", placeholder="예: 2026 디지털 전환 프로젝트", key="project_name_input")
+project_name = st.text_input("프로젝트명 *", placeholder="예: 2026 디지털 전환 프로젝트", key=f"project_name_{st.session_state['reset_key']}")
 
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("1차  사전 진단 설문")
     st.caption("CSV | 현재상태(q1-q6) + 변화추진환경(q7-q10) + 요구사항")
-    survey_file = st.file_uploader("파일 선택", type=["csv"], key="survey")
+    survey_file = st.file_uploader("파일 선택", type=["csv"], key=f"survey_{st.session_state['reset_key']}")
 
     st.subheader("2차  조직 자료 분석")
     st.caption("Excel | 6개 시트: 조직구조 / 업무방식 / 협업문화 / 제도정책 / 디지털환경 / 변화경험")
-    internal_file = st.file_uploader("파일 선택", type=["xlsx"], key="internal")
+    internal_file = st.file_uploader("파일 선택", type=["xlsx"], key=f"internal_{st.session_state['reset_key']}")
 
 with col2:
     st.subheader("3차  인터뷰 진단")
     st.caption("JSON | 임원 / 관리자 / 실무자 / 핵심이해관계자 인터뷰 결과")
-    interview_file = st.file_uploader("파일 선택", type=["json"], key="interview")
+    interview_file = st.file_uploader("파일 선택", type=["json"], key=f"interview_{st.session_state['reset_key']}")
 
     st.subheader("4차  행동 진단")
     st.caption("Excel | 4개 시트: 협업행동 / 디지털활용 / 변화참여 / 협업네트워크")
-    behavior_file = st.file_uploader("파일 선택", type=["xlsx"], key="behavior")
+    behavior_file = st.file_uploader("파일 선택", type=["xlsx"], key=f"behavior_{st.session_state['reset_key']}")
 
 with st.expander("📥 입력 양식 샘플 다운로드"):
     c1, c2, c3, c4 = st.columns(4)
@@ -221,21 +226,13 @@ if "result" in st.session_state:
     with btn_col2:
         # 초기화 버튼 추가
         if st.button("🔄 새 진단 시작 (초기화)", use_container_width=True):
-            # 1. 지워야 할 모든 세션 키 목록
-            keys_to_clear = [
-                "result",               # 결과 데이터
-                "project_name_input",   # 프로젝트명 텍스트
-                "survey",               # 1차 설문 파일
-                "internal",             # 2차 조직자료 파일
-                "interview",            # 3차 인터뷰 파일
-                "behavior"              # 4차 행동진단 파일
-            ]
+            # 1. 결과 데이터 지우기
+            if "result" in st.session_state:
+                del st.session_state["result"]
             
-            # 2. 목록을 돌면서 세션에서 삭제
-            for k in keys_to_clear:
-                if k in st.session_state:
-                    del st.session_state[k]
+            # 2. 리셋 카운터를 1 증가시켜 화면의 모든 입력창을 강제로 새 걸로 교체!
+            st.session_state["reset_key"] += 1
             
-            # 3. 화면 즉시 새로고침
+            # 3. 화면 새로고침
             st.rerun()
             
