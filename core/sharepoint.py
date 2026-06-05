@@ -78,7 +78,7 @@ class SharePointClient:
                     "SurveyScore": scores.get("survey", 0),
                     "BehaviorScore": scores.get("behavior", 0),
                     "TopRisks": ", ".join(scores.get("risks", [])),
-                    "ReportURL": report_url[:255] if report_url else "",
+                    "FileLink": report_url,
                 }
             },
         )

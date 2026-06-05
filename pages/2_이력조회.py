@@ -34,7 +34,7 @@ try:
                 "진단일":     f.get("DiagnosisDate", "")[:10],
                 "종합점수":   f.get("OverallScore", ""),
                 "종합등급":   f.get("OverallLevel", ""),
-                "리포트":     f.get("ReportURL", ""),
+                "리포트":     f.get("FileLink", ""),
             })
         st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
