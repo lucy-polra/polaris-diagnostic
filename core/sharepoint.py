@@ -57,11 +57,10 @@ class SharePointClient:
         )
         r.raise_for_status()
         data = r.json()
-        # webUrl, @microsoft.graph.downloadUrl, 또는 직접 URL 생성
+        # action=default&mobileredirect=true 파라미터 제거하여 URL 단축
         web_url = data.get("webUrl", "")
-        if not web_url:
-            site_base = "https://mavenkr.sharepoint.com/sites/msteams_688bfb-"
-            web_url = f"{site_base}/Shared%20Documents/{REPORT_FOLDER.replace(' ', '%20')}/{filename}"
+        if web_url and "action=default" in web_url:
+            web_url = web_url.split("&action=default")[0]
         return web_url
 
     def save_result(self, project_name: str, scores: dict, report_url: str) -> None:
@@ -79,7 +78,7 @@ class SharePointClient:
                     "SurveyScore": scores.get("survey", 0),
                     "BehaviorScore": scores.get("behavior", 0),
                     "TopRisks": ", ".join(scores.get("risks", [])),
-                    "ReportURL": report_url,
+                    "ReportURL": report_url[:255] if report_url else "",
                 }
             },
         )

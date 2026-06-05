@@ -108,7 +108,7 @@ if st.button("진단 분석 시작", type="primary", disabled=not ready):
             sp = SharePointClient()
             filename = f"{project_name}_{datetime.now().strftime('%Y%m%d_%H%M')}_진단리포트.docx"
             report_url = sp.upload_report(report_bytes, filename)
-            st.write(f"DEBUG report_url: {report_url}")
+            # st.write(f"DEBUG report_url: {report_url}")
             top_risks = [r.get("risk", "") for r in synthesis_result.get("top_risks", [])]
             # st.write(f"DEBUG top_risks: {top_risks}")
             sp.save_result(project_name, {
