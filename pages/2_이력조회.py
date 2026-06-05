@@ -36,7 +36,17 @@ try:
                 "종합등급":   f.get("OverallLevel", ""),
                 "리포트":     f.get("FileLink", ""),
             })
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+            
+        # 🚨 여기에 파이썬 단 정렬 로직 추가!
+        # 이력 조회 UI 페이지 코드의 DataFrame 생성 부분
+        df = pd.DataFrame(rows)
+        if not df.empty:
+            # 진단일을 기준으로 내림차순(최신순) 정렬
+            df = df.sort_values(by="진단일", ascending=False)
+            
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+        #st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
 except Exception as e:
     st.error(f"SharePoint 연결 오류: {e}")

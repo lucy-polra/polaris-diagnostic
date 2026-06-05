@@ -90,7 +90,8 @@ class SharePointClient:
         r = requests.get(
             f"{GRAPH}/sites/{config.SHAREPOINT_SITE_ID}"
             f"/lists/{config.SHAREPOINT_LIST_ID}/items"
-            "?expand=fields&$orderby=fields/DiagnosisDate desc&$top=30",
+            "?expand=fields&$top=30", # 👈 정렬 조건을 빼고 30개만 가져오도록 수정
+            # "?expand=fields&$orderby=fields/DiagnosisDate desc&$top=30",
             headers=self._headers,
         )
         r.raise_for_status()
